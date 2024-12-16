@@ -41,7 +41,7 @@
 * Push BTNC to start the bouncing ball and use the bat to keep the ball in play
 
 ## Description of inputs from and outputs to the Nexys board from the Vivado project (10 points of the Submission category)
-# As part of this category, if using starter code of some kind (discussed below), you should add at least one input and at least one output appropriate to your project to demonstrate your understanding of modifying the ports of your various architectures and components in VHDL as well as the separate .xdc constraints file.
+### As part of this category, if using starter code of some kind (discussed below), you should add at least one input and at least one output appropriate to your project to demonstrate your understanding of modifying the ports of your various architectures and components in VHDL as well as the separate .xdc constraints file.
 
 ## Images and/or videos of the project in action interspersed throughout to provide context (10 points of the Submission category)
 
