@@ -105,7 +105,6 @@ BEGIN
             audio_data => snare_audio
         );
 
-    -- Instantiate Hi-Hat
     hihat : wail
         PORT MAP (
             lo_pitch => hihat_tone,
