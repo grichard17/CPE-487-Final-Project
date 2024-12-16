@@ -2,6 +2,22 @@
 
 ## Description of expected behavior
 
+* The programmed Nexys A7-100T will act as a drum kit module and generate a waveform mimicking a snare drum, bass drum, hi-hat, and crash cymbal.
+
+	* The drum kit will require a Pmod I2S2 sterio audio I/O interface with an accompanying speaker.
+
+ * Which waveform is best for which instrument?
+
+   ![drum_waveforms](drum_waveforms.png)
+
+
+ 	* Each instrument has a different set of characteristics, timbres, and material properties that give way to unique sound.
+  	* Bass drum: Low frequency, begins with strong attack and smooth decay
+   	* Snare drum: Medium frequency, begins with a strong attack and a sharp decay
+   	* Hi-hat: High frequency, begins with a sharp attack and a sharp decay (closed) or long decay (open)
+  
+   	* By modulating the frequency of a note and decay (envelope decay), we can implement a nice variety of sounds to our drum kit.	  
+
 
 ## Summary of Steps
 ### 1. Create a new RTL project _drum_kit_ in Vivado Quick Start
