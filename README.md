@@ -142,4 +142,4 @@ set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports { BTND }
 
 * Harry - Implemented component instantiation, researched different waveforms to attempt to use, tried to add (and later decided to remove) audio decay
 
-* Greyson - 
+* Greyson - Set up constraint file, created basic method of changing tone (finalized by Harry), first attempts at drum kit by modifying the wave_speed signal
