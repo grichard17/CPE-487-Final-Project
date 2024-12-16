@@ -1,22 +1,10 @@
 # Final Project: Drum Kit
 
-* Extend the FPGA code developed in Lab 3 (Bouncing Ball) to build a PONG game
-  * The Digilent Nexys A7-100T board has a female [VGA connector](https://en.wikipedia.org/wiki/VGA_connector) that can be connected to a VGA monitor via a VGA cable or a [High-Definition Multimedia Interface](https://en.wikipedia.org/wiki/HDMI) (HDMI) monitor via a [VGA-to-HDMI converter](https://www.ventioncable.com/product/vga-to-hdmi-converter/) with a [micro-B USB](https://en.wikipedia.org/wiki/USB_hardware) power supply
-  * 2019-11-15 pull request by Peter Ho with the 800x600@60Hz support for 100MHz clock
-  * In 2020 Fall, [Zikang Sheng](https://github.com/karlsheng99/CPE487_dsd/tree/master/lab/lab%206) made an alternative design that used onboard BTNL and BTNR buttons to control the motion of the bat without Pmod AD1 and potentiometer. This is the default version for the current semester.
+## Description of expected behavior
 
 
-* The **_bat_n_ball_** module draws the bat and ball on the screen and also causes the ball to bounce (by reversing its speed) when it collides with the bat or one of the walls.
-  * It also uses a variable game_on to indicate whether the ball is currently in play.
-  * When game_on = ‘1’, the ball is visible and bounces off the bat and/or the top, left and right walls.
-  * If the ball hits the bottom wall, game_on is set to ‘0’. When game_on = ‘0’, the ball is not visible and waits to be served.
-  * When the serve input goes high, game_on is set to ‘1’ and the ball becomes visible again.
-
-* The **_pong_** module is the top level.
-  * BTN0 on the Nexys2 board is used to initiate a serve.
-  * The process ckp is used to generate timing signals for the VGA and ADC modules.
-
-### 1. Create a new RTL project _pong_ in Vivado Quick Start
+## Summary of Steps
+### 1. Create a new RTL project _drum_kit_ in Vivado Quick Start
 
 * Create six new source files of file type VHDL called **_clk_wiz_0_**, **_clk_wiz_0_clk_wiz_**, **_vga_sync_**, **_bat_n_ball_**, **_leddec16_**, and **_pong_**
 
@@ -52,30 +40,15 @@
 
 * Push BTNC to start the bouncing ball and use the bat to keep the ball in play
 
-### 5. Work on and edit code with the following modifications (depending on when you do this, it will be your Fourth, Fifth, or Sixth Lab Extension/Submission!)
+## Description of inputs from and outputs to the Nexys board from the Vivado project (10 points of the Submission category)
+# As part of this category, if using starter code of some kind (discussed below), you should add at least one input and at least one output appropriate to your project to demonstrate your understanding of modifying the ports of your various architectures and components in VHDL as well as the separate .xdc constraints file.
 
-#### A) Change ball speed
+## Images and/or videos of the project in action interspersed throughout to provide context (10 points of the Submission category)
 
-* The ball speed is currently 6 pixels per video frame
+## “Modifications” (15 points of the Submission category)
+### If building on an existing lab or expansive starter code of some kind, describe your “modifications” – the changes made to that starter code to improve the code, create entirely new functionalities, etc. Unless you were starting from one of the labs, please share any starter code used as well, including crediting the creator(s) of any code used. It is perfectly ok to start with a lab or other code you find as a baseline, but you will be judged on your contributions on top of that pre-existing code!
+### If you truly created your code/project from scratch, summarize that process here in place of the above.
 
-* Use the slide switches on the Nexys A7-100T board to program the ball speed in the range of 1-32 pixels per frame
+## Conclude with a summary of the process itself – who was responsible for what components (preferably also shown by each person contributing to the github repository!), the timeline of work completed, any difficulties encountered and how they were solved, etc. (10 points of the Submission category)
 
-  * **WARNING: Avoid setting the speed to zero as the ball will then never reach the bat or wall (how can you force the value to never go lower than 1?)**
-
-* You should also consider **when** to allow speed changes to occur that provides the smoothest gameplay experience
-
-* (For testing and/or fun) See how fast you can move the ball and still keep it in play
-
-#### B) Change bat width and count hits
-
-* Double the width of the bat to make the game really easy
-
-* However, to counteract this, modify the code so that the bat width decreases one pixel after each time successfully hitting the ball
-
-* The bat should reset to starting width when we miss the ball
-
-* Count the number of successful hits after each serve and display the count in binary on the 7-segment displays of the Nexys A7-100T board. 
-
-* (For testing and/or fun) See how many times you can hit the ball in a row as the bat slowly shrinks
-
-* Likely during your gameplay, you will notice that hits are often counted multiple times (as in your count increases by more than 1 per successful hit). Remedy this situation in your code as well
+## And of course, the code itself separated into appropriate .vhd and .xdc files. (50 points of the Submission category; based on the code working, code complexity, quantity/quality of modifications, etc.)
