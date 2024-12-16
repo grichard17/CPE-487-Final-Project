@@ -8,7 +8,7 @@
 
  * Which waveform is best for which instrument?
 
-   ![drum_waveforms](drum_waveforms.png)
+   ![drum_waveforms](drum_waveforms.jpg)
 
 
  	* Each instrument has a different set of characteristics, timbres, and material properties that give way to unique sound.
