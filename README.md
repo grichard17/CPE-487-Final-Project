@@ -15,30 +15,23 @@
   	* **Bass drum**: Low frequency, begins with strong attack and smooth decay
    	* **Snare drum**: Medium frequency, begins with a strong attack and a sharp decay
    	* **Hi-hat**: High frequency, begins with a sharp attack and a sharp decay (closed) or long decay (open)
-  
-   	* By modulating the frequency of a note and decay (envelope decay), we can implement a nice variety of sounds to our drum kit.	  
-
 
 ## Summary of Steps
 ### 1. Create a new RTL project _drum_kit_ in Vivado Quick Start
 
-* Create six new source files of file type VHDL called **_clk_wiz_0_**, **_clk_wiz_0_clk_wiz_**, **_vga_sync_**, **_bat_n_ball_**, **_leddec16_**, and **_pong_**
+* Create five new source files of file type VHDL called **drum.vhd**, **drumkit.vhd**, **tone.vhd**, **wail.vhd**, and **dac_if.vhd**
 
-  * clk_wiz_0.vhd and clk_wiz_0_clk_wiz.vhd are the same files as in Lab 3. leddec16.vhd is the same file from Lab 5.
-  
-  * vga_sync.vhd, bat_n_ball.vhd, and pong.vhd are new files for Lab 6
-
-* Create a new constraint file of file type XDC called **_pong_**
+	* drumkit.vhd, tone.vhd, wail.vhd, and dac_if.vhd are all mostly taken from **Lab 5**. Minor edits were made to all except drumkit.vhd, where a bulk of the process takes place.
+ 
+* Create a new constraint file of file type XDC called **drum.xdc**
 
 * Choose Nexys A7-100T board for the project
 
 * Click 'Finish'
 
-* Click design sources and copy the VHDL code from clk_wiz_0, clk_wiz_0_clk_wiz, vga_sync.vhd, bat_n_ball.vhd, leddec16.vhd, pong.vhd
+* Click design sources and copy the VHDL code from .vhd files
 
-* Click constraints and copy the code from pong.xdc
-
-* As an alternative, you can instead download files from Github and import them into your project when creating the project. The source file or files would still be imported during the Source step, and the constraint file or files would still be imported during the Constraints step.
+* Click constraints and copy the code from the .xdc
 
 ### 2. Run synthesis
 
@@ -52,29 +45,101 @@
 
 * Click 'Open Hardware Manager' and click 'Open Target' then 'Auto Connect'
 
-* Click 'Program Device' then xc7a100t_0 to download pong.bit to the Nexys A7-100T board
+* Click 'Program Device' then xc7a100t_0 to download drumkit.bit to the Nexys A7-100T board
 
-* Push BTNC to start the bouncing ball and use the bat to keep the ball in play
+* Push BTNC, BTNU, or BTNL to generate a sound per click. 
 
-## Description of inputs from and outputs to the Nexys board from the Vivado project (10 points of the Submission category)
-### As part of this category, if using starter code of some kind (discussed below), you should add at least one input and at least one output appropriate to your project to demonstrate your understanding of modifying the ports of your various architectures and components in VHDL as well as the separate .xdc constraints file.
+## Description of Project & Additions 
 
-* Add 5-keypad buttons on Nexys board in siren.xdc
+* Instantiated each drum component as a sub-component of wail.vhd in a new drumkit.vhd file, which stems from siren.vhd
+
+* In the architecture, 3 constants were defined for the bass, snare, and hihat (in order of increasing frequency). 3 audio outputs were also created to handle individualizing each sound so there was no overlap or error.
 
 ```vhdl
-set_property -dict { PACKAGE_PIN U18   IOSTANDARD LVCMOS33 } [get_ports btnC]
-set_property -dict { PACKAGE_PIN T18   IOSTANDARD LVCMOS33 } [get_ports btnU]
-set_property -dict { PACKAGE_PIN W19   IOSTANDARD LVCMOS33 } [get_ports btnL]
-set_property -dict { PACKAGE_PIN T17   IOSTANDARD LVCMOS33 } [get_ports btnR]
-set_property -dict { PACKAGE_PIN U17   IOSTANDARD LVCMOS33 } [get_ports btnD]
+    CONSTANT bass_tone : UNSIGNED (13 DOWNTO 0) := to_unsigned(300, 14); 
+    CONSTANT snare_tone : UNSIGNED (13 DOWNTO 0) := to_unsigned(400, 14); 
+    CONSTANT hihat_tone : UNSIGNED (13 DOWNTO 0) := to_unsigned(500, 14); 
 ```
 
-## Images and/or videos of the project in action interspersed throughout to provide context (10 points of the Submission category)
+```vhdl
+    SIGNAL bass_audio, snare_audio, hihat_audio : SIGNED (15 DOWNTO 0); 
+```
 
-## “Modifications” (15 points of the Submission category)
-### If building on an existing lab or expansive starter code of some kind, describe your “modifications” – the changes made to that starter code to improve the code, create entirely new functionalities, etc. Unless you were starting from one of the labs, please share any starter code used as well, including crediting the creator(s) of any code used. It is perfectly ok to start with a lab or other code you find as a baseline, but you will be judged on your contributions on top of that pre-existing code!
-### If you truly created your code/project from scratch, summarize that process here in place of the above.
+* We then instantiated 3 instances of wail for the bass, snare, and hihat. We mapped a component's tone to both lo-tone and hi-tone as we did not want the pitch to modulate for an individual component. wspeed was set to a constant as well as a wailing effect would not provide a constant tone. audio_data was then mapped accordingly for each output. This all successfully handled the creation of each component, but we now need a method to emit a sound only for a button press.
 
-## Conclude with a summary of the process itself – who was responsible for what components (preferably also shown by each person contributing to the github repository!), the timeline of work completed, any difficulties encountered and how they were solved, etc. (10 points of the Submission category)
+```vhdl
+    bass : wail
+        PORT MAP (
+            lo_pitch => bass_tone,
+            hi_pitch => bass_tone,
+            wspeed => to_unsigned(0, 8), 
+            wclk => slo_clk,
+            audio_clk => audio_CLK,
+            audio_data => bass_audio
+        );
 
-## And of course, the code itself separated into appropriate .vhd and .xdc files. (50 points of the Submission category; based on the code working, code complexity, quantity/quality of modifications, etc.)
+    snare : wail
+        PORT MAP (
+            lo_pitch => snare_tone,
+            hi_pitch => snare_tone,
+            wspeed => to_unsigned(0, 8),
+            wclk => slo_clk,
+            audio_clk => audio_CLK,
+            audio_data => snare_audio
+        );
+
+    hihat : wail
+        PORT MAP (
+            lo_pitch => hihat_tone,
+            hi_pitch => hihat_tone,
+            wspeed => to_unsigned(0, 8), 
+            wclk => slo_clk,
+            audio_clk => audio_CLK,
+            audio_data => hihat_audio
+        );
+```
+
+* To handle the button control, a process was defined dependent on the 3 buttons and 3 component audio signals. Similar to Lab 5, we set ```data_L``` to our desired audio signal if a button was pressed (btn = '1'). We had issues with sound playing without any buttons being pressed, so we added the ELSE condition which outputs a 0 if no event occurs. ```data_R``` was set to ```data_L``` for simplification, but further exploration could lead us to play components in separate channels.
+
+```vhdl
+    PROCESS (btnc, btnu, btnl, bass_audio, snare_audio, hihat_audio)
+    BEGIN
+        IF btnc = '1' THEN
+            data_L <= bass_audio; 
+        ELSIF btnu = '1' THEN
+            data_L <= snare_audio; 
+        ELSIF btnl = '1' THEN
+            data_L <= hihat_audio; 
+        ELSE
+            data_L <= (OTHERS => '0'); 
+        END IF;
+
+        data_R <= data_L;
+    END PROCESS;
+```
+
+* To complete the button mapping, we added the 5 buttons in drum.xdc.
+
+```vhdl
+set_property -dict { PACKAGE_PIN N17   IOSTANDARD LVCMOS33 } [get_ports { btnc }]; #IO_L9P_T1_DQS_14 Sch=btnc
+set_property -dict { PACKAGE_PIN M18   IOSTANDARD LVCMOS33 } [get_ports { btnu }]; #IO_L4N_T0_D05_14 Sch=btnu
+set_property -dict { PACKAGE_PIN P17   IOSTANDARD LVCMOS33 } [get_ports { btnl }]; #IO_L12P_T1_MRCC_14 Sch=btnl
+set_property -dict { PACKAGE_PIN M17   IOSTANDARD LVCMOS33 } [get_ports { BTNR }]; #IO_L10N_T1_D15_14 Sch=btnr
+set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports { BTND }]; #IO_L9N_T1_DQS_D13_14 Sch=btnd
+```
+
+## Issues Faced
+
+* Originally we wanted to implement the keypad from Lab 4, however we struggled combining the two .xdc files with separate clocks, and opted for the onboard buttons instead.
+
+* We also attempted to add a decay to each note to better simulate an acoustic instrument, however adding a decay rate and modifying the triangle wave proved too difficult in the time allotted.  
+
+## Video of 3-component Drum Kit
+
+[Here is a link to view a quick video of our project.](https://youtu.be/vDN9RkzP1cc)
+
+## Work Division
+
+* Harry - Implemented component instantiation, researched different waveforms to attempt to use, tried to add (and later decided to remove) audio decay
+
+* Greyson - 
