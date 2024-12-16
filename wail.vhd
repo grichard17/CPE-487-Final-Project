@@ -30,21 +30,11 @@ BEGIN
 	-- whether tone is currently rising or falling. Each wclk period it increments
 	-- (or decrements) the current pitch by wspeed. When it reaches hi_pitch, it
 	-- starts counting down. When it reaches lo_pitch, it starts counting up
-	wp : PROCESS
-		VARIABLE updn : std_logic;
-	BEGIN
-		WAIT UNTIL rising_edge(wclk);
-		IF curr_pitch >= hi_pitch THEN
-			updn := '0'; -- check to see if still in range
-		ELSIF curr_pitch <= lo_pitch THEN
-			updn := '1'; -- if not, adjust updn
-		END IF;
-		IF updn = '1' THEN
-			curr_pitch <= curr_pitch + wspeed; -- modulate pitch according to
-		ELSE
-			curr_pitch <= curr_pitch - wspeed; -- current value of updn
-		END IF;
-	END PROCESS;
+    wp : PROCESS
+    BEGIN
+        WAIT UNTIL rising_edge(wclk);
+        curr_pitch <= lo_pitch; -- Directly assign the input pitch (fixed pitch)
+    END PROCESS;
 	
 	
 	tgen : tone
