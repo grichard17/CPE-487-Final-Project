@@ -12,9 +12,9 @@
 
 
  	* Each instrument has a different set of characteristics, timbres, and material properties that give way to unique sound.
-  	* Bass drum: Low frequency, begins with strong attack and smooth decay
-   	* Snare drum: Medium frequency, begins with a strong attack and a sharp decay
-   	* Hi-hat: High frequency, begins with a sharp attack and a sharp decay (closed) or long decay (open)
+  	* **Bass drum**: Low frequency, begins with strong attack and smooth decay
+   	* **Snare drum**: Medium frequency, begins with a strong attack and a sharp decay
+   	* **Hi-hat**: High frequency, begins with a sharp attack and a sharp decay (closed) or long decay (open)
   
    	* By modulating the frequency of a note and decay (envelope decay), we can implement a nice variety of sounds to our drum kit.	  
 
