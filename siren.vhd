@@ -4,29 +4,26 @@ USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY siren IS
     PORT (
-        clk_50MHz : IN STD_LOGIC; -- System clock (50 MHz)
-        dac_MCLK : OUT STD_LOGIC; -- Outputs to PMODI2L DAC
+        clk_50MHz : IN STD_LOGIC; 
+        dac_MCLK : OUT STD_LOGIC; 
         dac_LRCK : OUT STD_LOGIC;
         dac_SCLK : OUT STD_LOGIC;
         dac_SDIN : OUT STD_LOGIC;
-        bt_clr : IN STD_LOGIC; -- Calculator "clear" button
-        bt_plus : IN STD_LOGIC; -- Calculator "+" button
-        bt_eq : IN STD_LOGIC; -- Calculator "=" button
-        BTNR : IN STD_LOGIC;
-        BTND : IN STD_LOGIC
+        btnc : IN STD_LOGIC; 
+        btnu : IN STD_LOGIC; 
+        btnl : IN STD_LOGIC
     );
 END siren;
 
 ARCHITECTURE Behavioral OF siren IS
-    -- Constants
-    CONSTANT lo_tone : UNSIGNED (13 DOWNTO 0) := to_unsigned(344, 14); -- Lower limit of siren (256 Hz)
-    CONSTANT hi_tone : UNSIGNED (13 DOWNTO 0) := to_unsigned(687, 14); -- Upper limit of siren (512 Hz)
+    CONSTANT bass_tone : UNSIGNED (13 DOWNTO 0) := to_unsigned(300, 14); 
+    CONSTANT snare_tone : UNSIGNED (13 DOWNTO 0) := to_unsigned(400, 14); 
+    CONSTANT hihat_tone : UNSIGNED (13 DOWNTO 0) := to_unsigned(500, 14); 
 
-    -- Signals
-    SIGNAL wail_speed : UNSIGNED (15 DOWNTO 0) := (OTHERS => '0'); -- Wailing speed
-    SIGNAL tcount : UNSIGNED (19 DOWNTO 0) := (OTHERS => '0'); -- Timing counter
-    SIGNAL data_L, data_R : SIGNED (15 DOWNTO 0); -- 16-bit signed audio data
-    SIGNAL dac_load_L, dac_load_R : STD_LOGIC; -- Timing pulses to load DAC shift register
+    SIGNAL tcount : UNSIGNED (19 DOWNTO 0) := (OTHERS => '0'); 
+    SIGNAL data_L, data_R : SIGNED (15 DOWNTO 0); 
+    SIGNAL bass_audio, snare_audio, hihat_audio : SIGNED (15 DOWNTO 0); 
+    SIGNAL dac_load_L, dac_load_R : STD_LOGIC; 
     SIGNAL slo_clk, sclk, audio_CLK : STD_LOGIC;
 
     COMPONENT dac_if IS
@@ -52,12 +49,9 @@ ARCHITECTURE Behavioral OF siren IS
     END COMPONENT;
 
 BEGIN
-
-    -- Process to set up timing signals using a 20-bit counter
     tim_pr : PROCESS (clk_50MHz)
     BEGIN
         IF rising_edge(clk_50MHz) THEN
-            -- Generate DAC load pulses
             IF (tcount(9 DOWNTO 0) >= X"00F") AND (tcount(9 DOWNTO 0) < X"02E") THEN
                 dac_load_L <= '1';
             ELSE
@@ -69,41 +63,18 @@ BEGIN
             ELSE
                 dac_load_R <= '0';
             END IF;
-
-            -- Increment timing counter
             tcount <= tcount + 1;
         END IF;
     END PROCESS;
 
-    -- Process to control wail_speed based on button inputs
-    drum_kit : PROCESS (clk_50MHz)
-    BEGIN
-        IF rising_edge(clk_50MHz) THEN
-            IF bt_clr = '1' THEN
-                -- Bass drum effect
-                wail_speed <= to_unsigned(1, 16);
-            ELSIF bt_plus = '1' THEN
-                -- Snare drum effect
-                wail_speed <= to_unsigned(10, 16);
-            ELSIF bt_eq = '1' THEN
-                -- Hi-hat effect
-                wail_speed <= to_unsigned(50, 16);
-            ELSE
-                -- Default (reset speed)
-                wail_speed <= to_unsigned(0, 16);
-            END IF;
-        END IF;
-    END PROCESS;
-
     -- Derived clock signals
-    dac_MCLK <= NOT tcount(1); -- DAC master clock (12.5 MHz)
-    audio_CLK <= tcount(9); -- Audio sampling rate (48.8 kHz)
-    dac_LRCK <= audio_CLK; -- Left/right channel clock
-    sclk <= tcount(4); -- Serial data clock (1.56 MHz)
+    dac_MCLK <= NOT tcount(1); 
+    audio_CLK <= tcount(9); 
+    dac_LRCK <= audio_CLK; 
+    sclk <= tcount(4); 
     dac_SCLK <= sclk;
-    slo_clk <= tcount(19); -- Clock for wailing tone (47.6 Hz)
+    slo_clk <= tcount(19); 
 
-    -- Instantiate DAC interface
     dac : dac_if
         PORT MAP (
             SCLK => sclk,
@@ -114,18 +85,50 @@ BEGIN
             SDATA => dac_SDIN
         );
 
-    -- Instantiate wail component
-    w1 : wail
+    bass : wail
         PORT MAP (
-            lo_pitch => lo_tone,
-            hi_pitch => hi_tone,
-            wspeed => wail_speed(7 DOWNTO 0), -- Truncated to 8 bits
+            lo_pitch => bass_tone,
+            hi_pitch => bass_tone,
+            wspeed => to_unsigned(0, 8), 
             wclk => slo_clk,
             audio_clk => audio_CLK,
-            audio_data => data_L
+            audio_data => bass_audio
         );
 
-    -- Duplicate data for right channel
-    data_R <= data_L;
+    snare : wail
+        PORT MAP (
+            lo_pitch => snare_tone,
+            hi_pitch => snare_tone,
+            wspeed => to_unsigned(0, 8),
+            wclk => slo_clk,
+            audio_clk => audio_CLK,
+            audio_data => snare_audio
+        );
+
+    -- Instantiate Hi-Hat
+    hihat : wail
+        PORT MAP (
+            lo_pitch => hihat_tone,
+            hi_pitch => hihat_tone,
+            wspeed => to_unsigned(0, 8), 
+            wclk => slo_clk,
+            audio_clk => audio_CLK,
+            audio_data => hihat_audio
+        );
+
+    PROCESS (btnc, btnu, btnl, bass_audio, snare_audio, hihat_audio)
+    BEGIN
+        IF btnc = '1' THEN
+            data_L <= bass_audio; 
+        ELSIF btnu = '1' THEN
+            data_L <= snare_audio; 
+        ELSIF btnl = '1' THEN
+            data_L <= hihat_audio; 
+        ELSE
+            data_L <= (OTHERS => '0'); 
+        END IF;
+
+        data_R <= data_L;
+    END PROCESS;
 
 END Behavioral;
