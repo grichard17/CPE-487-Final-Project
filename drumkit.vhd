@@ -2,7 +2,7 @@ library IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
-ENTITY siren IS
+ENTITY drumkit IS
     PORT (
         clk_50MHz : IN STD_LOGIC; 
         dac_MCLK : OUT STD_LOGIC; 
@@ -13,9 +13,9 @@ ENTITY siren IS
         btnu : IN STD_LOGIC; 
         btnl : IN STD_LOGIC
     );
-END siren;
+END drumkit;
 
-ARCHITECTURE Behavioral OF siren IS
+ARCHITECTURE Behavioral OF drumkit IS
     CONSTANT bass_tone : UNSIGNED (13 DOWNTO 0) := to_unsigned(300, 14); 
     CONSTANT snare_tone : UNSIGNED (13 DOWNTO 0) := to_unsigned(400, 14); 
     CONSTANT hihat_tone : UNSIGNED (13 DOWNTO 0) := to_unsigned(500, 14); 
